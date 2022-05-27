@@ -5,12 +5,26 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"time"
 )
 
 type Configuration struct {
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	AuthToken    string `json:"auth_token"`
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	Auth         AuthCode `json:"auth"`
+	Token        Token    `json:"token"`
+}
+
+type AuthCode struct {
+	auth_code string `json:"auth_code"`
+	token     string `json:"auth_token"`
+}
+
+type Token struct {
+	AccessToken  string `json:"access_token"`
+	Expires      time.Time
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func LoadConfig(configPath string) *Configuration {
