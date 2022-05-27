@@ -15,4 +15,4 @@
 # vendor/
 
 # all local configs
-config/twitch.json
+config/config.json
