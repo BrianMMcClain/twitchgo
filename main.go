@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
-
 	twitchbuddy "github.com/brianmmcclain/twitch-buddy-go/lib"
 )
 
 func main() {
-	config := twitchbuddy.NewConfig("config/config.json")
-	log.Printf("Client ID: %s", config.ClientID)
+	config := twitchbuddy.LoadConfig("config/config.json")
+	twitch := twitchbuddy.NewTwitch(config)
+	twitch.Auth()
+	config.WriteConfig("config/config.json")
 }

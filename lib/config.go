@@ -2,6 +2,7 @@ package lib
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -9,9 +10,10 @@ import (
 type Configuration struct {
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
+	AuthToken    string `json:"auth_token"`
 }
 
-func NewConfig(configPath string) *Configuration {
+func LoadConfig(configPath string) *Configuration {
 	c := new(Configuration)
 
 	// Read config file
@@ -23,4 +25,12 @@ func NewConfig(configPath string) *Configuration {
 	// Unmarshal the config JSON
 	json.Unmarshal([]byte(configJson), &c)
 	return c
+}
+
+func (c *Configuration) WriteConfig(path string) {
+	j, err := json.Marshal(c)
+	if err != nil {
+		log.Fatalf("Error writing config: %s", err)
+	}
+	fmt.Println(string(j))
 }
