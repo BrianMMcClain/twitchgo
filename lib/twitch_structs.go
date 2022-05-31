@@ -15,3 +15,19 @@ type User struct {
 	ProfileImageURL string    `json:"profile_image_url"`
 	ViewCount       int       `json:"view_count"`
 }
+
+type Stream struct {
+	UserLogin    string    `json:"user_login"`
+	UserName     string    `json:"user_name"`
+	GameName     string    `json:"game_name"`
+	GameID       string    `json:"game_id"`
+	Type         string    `json:"type"`
+	Title        string    `json:"title"`
+	ViewerCount  int       `json:"viewer_count"`
+	StartedAt    time.Time `json:"started_at"`
+	ThumbnailURL string    `json:"thumbnail_url"`
+}
+
+type StreamsResponse struct {
+	Data []Stream `json:"data"`
+}

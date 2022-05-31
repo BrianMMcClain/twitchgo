@@ -16,6 +16,7 @@ import (
 type Twitch struct {
 	config    *Configuration
 	server    http.Server
+	user_id   string
 	waitGroup *sync.WaitGroup
 }
 
@@ -127,14 +128,25 @@ func sendRequest(requestURL string, t *Twitch) []byte {
 	return respBody
 }
 
-func (t *Twitch) GetUser() User {
+func (t *Twitch) GetLoggedInUser() User {
 	requestURL := "https://api.twitch.tv/helix/users"
 	respBody := sendRequest(requestURL, t)
 	u := new(UserResponse)
 	json.Unmarshal(respBody, &u)
+	t.user_id = u.Data[0].ID
 	return u.Data[0]
 }
 
-func (t *Twitch) GetLiveStreams() {
-	//requestURL := "https://api.twitch.tv/helix/streams/followed"
+func (t *Twitch) GetFollowedStreams() []Stream {
+
+	// Get the logged in user's ID if not already cached
+	if len(t.user_id) == 0 {
+		t.GetLoggedInUser()
+	}
+
+	requestURL := fmt.Sprintf("https://api.twitch.tv/helix/streams/followed?user_id=%s", t.user_id)
+	respBody := sendRequest(requestURL, t)
+	streams := new(StreamsResponse)
+	json.Unmarshal(respBody, &streams)
+	return streams.Data
 }
