@@ -2,22 +2,18 @@ package lib
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 )
 
 type Configuration struct {
-	ClientID     string   `json:"client_id"`
-	ClientSecret string   `json:"client_secret"`
-	Auth         AuthCode `json:"auth"`
-	Token        Token    `json:"token"`
-}
-
-type AuthCode struct {
-	auth_code string `json:"auth_code"`
-	token     string `json:"auth_token"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	Auth         string `json:"auth"`
+	Token        Token  `json:"token"`
+	path         string
 }
 
 type Token struct {
@@ -38,13 +34,28 @@ func LoadConfig(configPath string) *Configuration {
 
 	// Unmarshal the config JSON
 	json.Unmarshal([]byte(configJson), &c)
+	c.path = configPath
 	return c
 }
 
 func (c *Configuration) WriteConfig(path string) {
 	j, err := json.Marshal(c)
 	if err != nil {
+		log.Fatalf("Error marshaling config: %s", err)
+	}
+
+	log.Printf("%s\n", j)
+
+	// Open config
+	f, err := os.OpenFile(c.path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		log.Fatalf("Error opening config at %s: %s", c.path, err)
+	}
+
+	// Write config
+	_, err = f.Write(j)
+	if err != nil {
 		log.Fatalf("Error writing config: %s", err)
 	}
-	fmt.Println(string(j))
+	f.Close()
 }

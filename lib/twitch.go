@@ -15,7 +15,6 @@ import (
 
 type Twitch struct {
 	config    *Configuration
-	code      AuthCode
 	server    http.Server
 	waitGroup *sync.WaitGroup
 }
@@ -28,17 +27,17 @@ func NewTwitch(config *Configuration) *Twitch {
 
 func (t *Twitch) Auth() {
 
-	if len(t.config.Auth.auth_code) == 0 {
+	if len(t.config.Auth) == 0 {
 		t.fetchAuthCode()
 	}
 
-	if len(t.config.Token.RefreshToken) > 0 || t.config.Token.Expires.Before(time.Now()) {
+	if len(t.config.Token.RefreshToken) > 0 && !t.config.Token.Expires.Before(time.Now()) {
+		log.Println("Token still valid, reusing")
+	} else {
 		log.Println("Token expired, refreshing")
 		token := t.fetchToken()
 		t.config.Token = *token
-		//TODO: Save token
-	} else {
-		log.Println("Token still valid, reusing")
+		t.config.WriteConfig(t.config.path)
 	}
 }
 
@@ -72,7 +71,7 @@ func (t *Twitch) fetchAuthCode() {
 func (t *Twitch) authCallback(w http.ResponseWriter, req *http.Request) {
 	// Store the auth token
 	code := req.URL.Query().Get("code")
-	t.config.Auth.auth_code = code
+	t.config.Auth = code
 
 	resp := "Logged in! You may now close the window."
 	w.Write([]byte(resp))
@@ -87,7 +86,7 @@ func (t *Twitch) fetchToken() *Token {
 	data := url.Values{
 		"client_id":     {t.config.ClientID},
 		"client_secret": {t.config.ClientSecret},
-		"code":          {t.config.Auth.auth_code},
+		"code":          {t.config.Auth},
 		"grant_type":    {"authorization_code"},
 		"redirect_uri":  {"http://localhost:8080"},
 	}
