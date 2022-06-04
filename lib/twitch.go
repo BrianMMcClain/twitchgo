@@ -61,8 +61,7 @@ func (t *Twitch) fetchAuthCode() {
 	// Open the authentication URL to get an auth token for the logged in user
 	authURL := fmt.Sprintf("https://id.twitch.tv/oauth2/authorize?response_type=code&redirect_uri=http://localhost:8080&client_id=%s&scope=user%%3Aread%%3Afollows", t.config.ClientID)
 
-	// TODO: maybe just provide the link
-	exec.Command("open", authURL).Start()
+	log.Printf("Please authenticate using your browser: %s\n", authURL)
 
 	// Once we receive a response, shutdown the http server
 	t.waitGroup.Wait()
