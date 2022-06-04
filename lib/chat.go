@@ -71,7 +71,7 @@ func (c *Chat) readThread(conn net.Conn) {
 			log.Printf("Joined %s", c.Channel)
 			c.Joined = true
 		} else if strings.Contains(line, "PING") {
-			log.Printf("%s\n", line)
+			// Respond to Keepalive message
 			c.sendPong(line)
 		} else if strings.Contains(line, ".tmi.twitch.tv PRIVMSG #"+strings.ToLower(c.Channel)+" :") {
 			// Read a message in the streams chat
@@ -87,7 +87,6 @@ func (c *Chat) joinChannel() {
 
 func (c *Chat) sendPong(line string) {
 	rsp := strings.Replace(line, "PING", "PONG", 1)
-	log.Printf("Responding to PING: %s\n", rsp)
 	c.sendMsg(rsp)
 }
 
