@@ -37,4 +37,6 @@ func main() {
 	}
 
 	fmt.Printf("Connecting to %s . . .\n", streams[in-1].UserName)
+	twitch.ChatConnect(streams[in-1].UserLogin)
+	reader.ReadLine()
 }
