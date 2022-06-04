@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os/exec"
 	"sync"
 	"time"
 )
