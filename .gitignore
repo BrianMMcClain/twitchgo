@@ -16,3 +16,6 @@
 
 # all local configs
 config/config.json
+
+# debugging
+__debug_bin
