@@ -75,7 +75,7 @@ func (c *Chat) readThread(conn net.Conn) {
 			c.sendPong(line)
 		} else if strings.Contains(line, ".tmi.twitch.tv PRIVMSG #"+strings.ToLower(c.Channel)+" :") {
 			// Read a message in the streams chat
-			m := parseMessage(line)
+			m := c.parseMessage(line)
 			fmt.Printf("%s: %s\n", m.Sender, m.Text)
 		}
 	}
@@ -90,14 +90,14 @@ func (c *Chat) sendPong(line string) {
 	c.sendMsg(rsp)
 }
 
-func parseMessage(line string) *Message {
+func (c *Chat) parseMessage(line string) *Message {
 	m := new(Message)
 
 	// Get the sender
 	m.Sender = strings.Split(line, "!")[0][1:]
 
 	// Get the message
-	m.Text = strings.Split(line, "tmi.twitch.tv PRIVMSG #esfandtv :")[1]
+	m.Text = strings.Split(line, "tmi.twitch.tv PRIVMSG #"+c.Channel+" :")[1]
 
 	return m
 }

@@ -15,7 +15,7 @@ import (
 type Twitch struct {
 	config    *Configuration
 	server    http.Server
-	user_id   string
+	user      User
 	waitGroup *sync.WaitGroup
 }
 
@@ -28,13 +28,14 @@ func NewTwitch(config *Configuration) *Twitch {
 func (t *Twitch) Auth() {
 
 	if len(t.config.Auth) == 0 {
-		t.fetchAuthCode()
+
 	}
 
 	if len(t.config.Token.RefreshToken) > 0 && !t.config.Token.Expires.Before(time.Now()) {
 		log.Println("Token still valid, reusing")
 	} else {
 		log.Println("Token expired, refreshing")
+		t.fetchAuthCode()
 		token := t.fetchToken()
 		t.config.Token = *token
 		t.config.WriteConfig(t.config.path)
@@ -127,22 +128,26 @@ func sendRequest(requestURL string, t *Twitch) []byte {
 }
 
 func (t *Twitch) GetLoggedInUser() User {
-	requestURL := "https://api.twitch.tv/helix/users"
-	respBody := sendRequest(requestURL, t)
-	u := new(UserResponse)
-	json.Unmarshal(respBody, &u)
-	t.user_id = u.Data[0].ID
-	return u.Data[0]
+	if len(t.user.ID) == 0 {
+		requestURL := "https://api.twitch.tv/helix/users"
+		respBody := sendRequest(requestURL, t)
+		u := new(UserResponse)
+		json.Unmarshal(respBody, &u)
+		t.user = u.Data[0]
+		return u.Data[0]
+	} else {
+		return t.user
+	}
 }
 
 func (t *Twitch) GetFollowedStreams() []Stream {
 
 	// Get the logged in user's ID if not already cached
-	if len(t.user_id) == 0 {
+	if len(t.user.ID) == 0 {
 		t.GetLoggedInUser()
 	}
 
-	requestURL := fmt.Sprintf("https://api.twitch.tv/helix/streams/followed?user_id=%s", t.user_id)
+	requestURL := fmt.Sprintf("https://api.twitch.tv/helix/streams/followed?user_id=%s", t.user.ID)
 	respBody := sendRequest(requestURL, t)
 	streams := new(StreamsResponse)
 	json.Unmarshal(respBody, &streams)
