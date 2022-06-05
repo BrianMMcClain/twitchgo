@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	twitchbuddy "github.com/brianmmcclain/twitch-buddy-go/twitchbuddy"
+	"github.com/brianmmcclain/twitch-buddy-go/twitchbuddy"
 )
 
 func main() {
