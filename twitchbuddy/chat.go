@@ -41,7 +41,6 @@ func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
 	chat.Conn = conn
 
 	// Authenticate
-	// TODO: Keep things simple for now, only worry about basic chat
 	chat.sendMsg("CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands")
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
 	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
