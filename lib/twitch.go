@@ -26,11 +26,6 @@ func NewTwitch(config *Configuration) *Twitch {
 }
 
 func (t *Twitch) Auth() {
-
-	if len(t.config.Auth) == 0 {
-
-	}
-
 	if len(t.config.Token.RefreshToken) > 0 && !t.config.Token.Expires.Before(time.Now()) {
 		log.Println("Token still valid, reusing")
 	} else {
