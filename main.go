@@ -37,6 +37,10 @@ func main() {
 	}
 
 	fmt.Printf("Connecting to %s . . .\n", streams[in-1].UserName)
-	twitch.ChatConnect(streams[in-1].UserLogin)
-	reader.ReadLine()
+	msgChannel := make(chan twitchbuddy.Message)
+	twitch.ChatConnect(streams[in-1].UserLogin, msgChannel)
+	for {
+		msg := <-msgChannel
+		fmt.Printf("%s: %s\n", msg.Sender, msg.Text)
+	}
 }

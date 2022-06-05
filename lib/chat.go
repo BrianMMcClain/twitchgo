@@ -2,7 +2,6 @@ package lib
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -21,7 +20,7 @@ type Message struct {
 	Text   string
 }
 
-func (t *Twitch) ChatConnect(channel string) {
+func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
 	CHAT_HOST := "irc.chat.twitch.tv:6667"
 
 	// Build the chat struct
@@ -42,7 +41,7 @@ func (t *Twitch) ChatConnect(channel string) {
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
 	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
 
-	go chat.readThread(conn)
+	go chat.readThread(conn, msgChannel)
 }
 
 func (c *Chat) sendMsg(message string) {
@@ -52,7 +51,7 @@ func (c *Chat) sendMsg(message string) {
 	}
 }
 
-func (c *Chat) readThread(conn net.Conn) {
+func (c *Chat) readThread(conn net.Conn, msgChannel chan Message) {
 	reader := bufio.NewReader(conn)
 	for {
 		lineB, _, err := reader.ReadLine()
@@ -76,7 +75,7 @@ func (c *Chat) readThread(conn net.Conn) {
 		} else if strings.Contains(line, ".tmi.twitch.tv PRIVMSG #"+strings.ToLower(c.Channel)+" :") {
 			// Read a message in the streams chat
 			m := c.parseMessage(line)
-			fmt.Printf("%s: %s\n", m.Sender, m.Text)
+			msgChannel <- *m
 		}
 	}
 }
