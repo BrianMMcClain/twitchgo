@@ -97,7 +97,7 @@ func (c *Chat) sendPong(line string) {
 func (c *Chat) parseMessage(line string) *Message {
 	m := new(Message)
 
-	// Get the sender
+	// Parse the advanced tags to pull the user, sub, and mod info
 	tags := strings.Split(strings.Split(line, "!")[0][1:], ";")
 	for _, tag := range tags {
 		tagSplit := strings.Split(tag, "=")
@@ -108,6 +108,7 @@ func (c *Chat) parseMessage(line string) *Message {
 		} else if key == "subscriber" {
 			m.Subscriber = val == "1"
 		} else if key == "badge-info" {
+			// Sub length only exists if they are a sub, ensure it exists
 			if len(val) > 0 {
 				if strings.Split(val, "/")[0] == "subscriber" {
 					subLength, err := strconv.Atoi(strings.Split(val, "/")[1])

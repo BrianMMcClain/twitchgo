@@ -41,6 +41,6 @@ func main() {
 	twitch.ChatConnect(streams[in-1].UserLogin, msgChannel)
 	for {
 		msg := <-msgChannel
-		fmt.Printf("%s: %s\n", msg.Sender, msg.Text)
+		fmt.Printf("(%d) %s: %s\n", msg.SubLength, msg.Sender, msg.Text)
 	}
 }
