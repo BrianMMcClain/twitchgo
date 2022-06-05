@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -16,8 +17,12 @@ type Chat struct {
 }
 
 type Message struct {
-	Sender string
-	Text   string
+	Sender     string
+	Text       string
+	Subscriber bool
+	SubLength  int
+	Mod        bool
+	UserID     string
 }
 
 func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
@@ -37,7 +42,7 @@ func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
 
 	// Authenticate
 	// TODO: Keep things simple for now, only worry about basic chat
-	// chat.sendMsg("CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands")
+	chat.sendMsg("CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands")
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
 	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
 
@@ -93,7 +98,31 @@ func (c *Chat) parseMessage(line string) *Message {
 	m := new(Message)
 
 	// Get the sender
-	m.Sender = strings.Split(line, "!")[0][1:]
+	tags := strings.Split(strings.Split(line, "!")[0][1:], ";")
+	for _, tag := range tags {
+		tagSplit := strings.Split(tag, "=")
+		key := tagSplit[0]
+		val := tagSplit[1]
+		if key == "display-name" {
+			m.Sender = val
+		} else if key == "subscriber" {
+			m.Subscriber = val == "1"
+		} else if key == "badge-info" {
+			if len(val) > 0 {
+				if strings.Split(val, "/")[0] == "subscriber" {
+					subLength, err := strconv.Atoi(strings.Split(val, "/")[1])
+					if err != nil {
+						log.Fatalf("Could not determine sub length: %s\n", err)
+					}
+					m.SubLength = subLength
+				}
+			}
+		} else if key == "mod" {
+			m.Mod = val == "1"
+		} else if key == "user-id" {
+			m.UserID = val
+		}
+	}
 
 	// Get the message
 	m.Text = strings.Split(line, "tmi.twitch.tv PRIVMSG #"+c.Channel+" :")[1]
