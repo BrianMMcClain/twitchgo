@@ -24,18 +24,26 @@ type Token struct {
 }
 
 func LoadConfig(configPath string) *Configuration {
-	c := new(Configuration)
-
 	// Read config file
-	configJson, err := ioutil.ReadFile(configPath)
+	configJSON, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Unmarshal the config JSON
-	json.Unmarshal([]byte(configJson), &c)
+	c, _ := ParseConfig(string(configJSON))
 	c.path = configPath
 	return c
+}
+
+func ParseConfig(configJSON string) (*Configuration, error) {
+	c := new(Configuration)
+	err := json.Unmarshal([]byte(configJSON), &c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (c *Configuration) WriteConfig(path string) {
