@@ -19,3 +19,9 @@ config/config.json
 
 # debugging
 __debug_bin
+
+# build
+twitchgo
+
+# VSCode
+.vscode/*.log
