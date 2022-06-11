@@ -1,4 +1,4 @@
-package twitchbuddy
+package twitch
 
 import "time"
 

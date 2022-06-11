@@ -7,17 +7,17 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/brianmmcclain/twitch-buddy-go/twitchbuddy"
+	"github.com/brianmmcclain/twitchgo/twitch"
 )
 
 func main() {
-	config := twitchbuddy.LoadConfig("config/config.json")
-	twitch := twitchbuddy.NewTwitch(config)
-	twitch.Auth()
-	u := twitch.GetLoggedInUser()
+	config := twitch.LoadConfig("config/config.json")
+	twitchConn := twitch.NewTwitch(config)
+	twitchConn.Auth()
+	u := twitchConn.GetLoggedInUser()
 	fmt.Printf("Hello, %s!\n", u.DisplayName)
 
-	streams := twitch.GetFollowedStreams()
+	streams := twitchConn.GetFollowedStreams()
 	for i, s := range streams {
 		fmt.Printf("%d: %s (%d - %s): %s\n", i+1, s.UserName, s.ViewerCount, s.GameName, s.Title)
 	}
@@ -37,8 +37,8 @@ func main() {
 	}
 
 	fmt.Printf("Connecting to %s . . .\n", streams[in-1].UserName)
-	msgChannel := make(chan twitchbuddy.Message)
-	twitch.ChatConnect(streams[in-1].UserLogin, msgChannel)
+	msgChannel := make(chan twitch.Message)
+	twitchConn.ChatConnect(streams[in-1].UserLogin, msgChannel)
 	for {
 		msg := <-msgChannel
 		fmt.Printf("(%d) %s: %s\n", msg.SubLength, msg.Sender, msg.Text)

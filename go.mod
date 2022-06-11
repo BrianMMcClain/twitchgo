@@ -1,3 +1,3 @@
-module github.com/brianmmcclain/twitch-buddy-go
+module github.com/brianmmcclain/twitchgo
 
 go 1.18
