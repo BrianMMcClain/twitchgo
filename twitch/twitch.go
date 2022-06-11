@@ -122,14 +122,21 @@ func sendRequest(requestURL string, t *Twitch) []byte {
 	return respBody
 }
 
+func (t *Twitch) GetUserByLogin(login string) User {
+	requestURL := "https://api.twitch.tv/helix/users"
+	if len(login) > 0 {
+		requestURL += "?login=" + login
+	}
+	respBody := sendRequest(requestURL, t)
+	u := new(UserResponse)
+	json.Unmarshal(respBody, &u)
+	t.user = u.Data[0]
+	return u.Data[0]
+}
+
 func (t *Twitch) GetLoggedInUser() User {
 	if len(t.user.ID) == 0 {
-		requestURL := "https://api.twitch.tv/helix/users"
-		respBody := sendRequest(requestURL, t)
-		u := new(UserResponse)
-		json.Unmarshal(respBody, &u)
-		t.user = u.Data[0]
-		return u.Data[0]
+		return t.GetUserByLogin(t.user.Login)
 	} else {
 		return t.user
 	}
