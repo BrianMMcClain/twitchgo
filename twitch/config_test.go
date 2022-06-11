@@ -10,7 +10,7 @@ func TestParseConfig(t *testing.T) {
 	c, err := ParseConfig(configJSON)
 
 	wantID := regexp.MustCompile("MyID")
-	wantSecret := regexp.MustCompile("MySecret")
+	wantSecret := regexp.MustCompile("MySecrett")
 
 	if err != nil {
 		t.Fatalf(`ParseConfig(configJSON) = %q, got error: %s`, c, err)
