@@ -19,6 +19,7 @@ type User struct {
 }
 
 type Stream struct {
+	ID           string    `json:"id"`
 	UserLogin    string    `json:"user_login"`
 	UserName     string    `json:"user_name"`
 	GameName     string    `json:"game_name"`
