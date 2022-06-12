@@ -8,9 +8,8 @@ import (
 	"time"
 )
 
-func TestGetUserByLogin(t *testing.T) {
-	// Reference data pulled from Twitch API docs
-	expected := `{
+var testConfigJSON = "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
+var testUserJSON = `{
 	"data": [
 			{
 			"id": "141981764",
@@ -27,17 +26,59 @@ func TestGetUserByLogin(t *testing.T) {
 			}
 		]
 	}`
+var testCreatedAtTime, _ = time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
+var testUser = User{
+	"141981764",
+	"twitchdev",
+	"TwitchDev",
+	"partner",
+	"Supporting third-party developers building Twitch integrations from chatbots to game integrations.",
+	"https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
+	"https://static-cdn.jtvnw.net/jtv_user_pictures/3f13ab61-ec78-4fe6-8481-8682cb3b0ac2-channel_offline_image-1920x1080.png",
+	5980557,
+	testCreatedAtTime,
+}
+var testStreamsList = `{
+	"data": [{
+		"id": "141981764",
+		"user_id": "141981764",
+		"user_login": "twitchdev",
+		"user_name": "TwitchDev",
+		"game_id": "509658",
+		"game_name": "Just Chatting",
+		"type": "live",
+		"title": "Welcome To Twitch!",
+		"viewer_count": 111111,
+		"started_at": "2022-06-12T03:55:05Z",
+		"language": "en",
+		"thumbnail_url": "https://localhost/preview.jpg"
+	}, {
+		"id": "141981765",
+		"user_id": "141981765",
+		"user_login": "twitchdev2",
+		"user_name": "TwitchDev2",
+		"game_id": "509658",
+		"game_name": "Just Chatting",
+		"type": "live",
+		"title": "Welcome To Twitch!",
+		"viewer_count": 111111,
+		"started_at": "2022-06-11T18:58:01Z",
+		"language": "en",
+		"thumbnail_url": "https://localhost/preview.jpg"
+	}],
+	"pagination": {}
+}`
 
+func TestGetUserByLogin(t *testing.T) {
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, expected)
+			fmt.Fprint(w, testUserJSON)
 		}))
 	defer svr.Close()
 
 	// Make the request with a mock config
-	configJSON := "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
-	c, _ := ParseConfig(configJSON)
+	c, _ := ParseConfig(testConfigJSON)
 	twitchConn := NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetUserByLogin("testUser")
@@ -64,140 +105,49 @@ func TestGetUserByLogin(t *testing.T) {
 }
 
 func TestGetLoggedInUserCached(t *testing.T) {
-	// Reference data pulled from Twitch API docs
-	testCreatedAtTime, _ := time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
-	u1 := User{
-		"141981764",
-		"twitchdev",
-		"TwitchDev",
-		"partner",
-		"Supporting third-party developers building Twitch integrations from chatbots to game integrations.",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/3f13ab61-ec78-4fe6-8481-8682cb3b0ac2-channel_offline_image-1920x1080.png",
-		5980557,
-		testCreatedAtTime,
-	}
-
-	configJSON := "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
-	c, _ := ParseConfig(configJSON)
+	c, _ := ParseConfig(testConfigJSON)
 	twitchConn := NewTwitch(c)
-	twitchConn.user = u1
+	twitchConn.user = testUser
 	u2 := twitchConn.GetLoggedInUser()
 
-	if u1 != u2 {
-		t.Fatalf(`GetLoggedInUser() = got %v, want cached %v`, u2, u1)
+	if testUser != u2 {
+		t.Fatalf(`GetLoggedInUser() = got %v, want cached %v`, u2, testUser)
 	}
 }
 
 func TestGetLoggedInUserNotCached(t *testing.T) {
-	// Reference data pulled from Twitch API docs
-	testCreatedAtTime, _ := time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
-	expected := User{
-		"141981764",
-		"twitchdev",
-		"TwitchDev",
-		"partner",
-		"Supporting third-party developers building Twitch integrations from chatbots to game integrations.",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/3f13ab61-ec78-4fe6-8481-8682cb3b0ac2-channel_offline_image-1920x1080.png",
-		5980557,
-		testCreatedAtTime,
-	}
-	restData := `{
-		"data": [
-				{
-				"id": "141981764",
-				"login": "twitchdev",
-				"display_name": "TwitchDev",
-				"type": "",
-				"broadcaster_type": "partner",
-				"description": "Supporting third-party developers building Twitch integrations from chatbots to game integrations.",
-				"profile_image_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
-				"offline_image_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/3f13ab61-ec78-4fe6-8481-8682cb3b0ac2-channel_offline_image-1920x1080.png",
-				"view_count": 5980557,
-				"email": "not-real@email.com",
-				"created_at": "2016-12-14T20:32:28Z"
-				}
-			]
-		}`
-
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, restData)
+			fmt.Fprint(w, testUserJSON)
 		}))
 	defer svr.Close()
 
 	// Make the request with a mock config
-	configJSON := "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
-	c, _ := ParseConfig(configJSON)
+	c, _ := ParseConfig(testConfigJSON)
 	twitchConn := NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetLoggedInUser()
 
 	// Verify tests
-	if expected != u {
-		t.Fatalf(`GetLoggedInUser() = got %v, want %v`, u, expected)
+	if testUser != u {
+		t.Fatalf(`GetLoggedInUser() = got %v, want %v`, u, testUser)
 	}
 }
 
 func TestGetFollowedStreams(t *testing.T) {
-	// Reference data pulled from Twitch API docs
-	restData := `{
-		"data": [{
-			"id": "141981764",
-			"user_id": "141981764",
-			"user_login": "twitchdev",
-			"user_name": "TwitchDev",
-			"game_id": "509658",
-			"game_name": "Just Chatting",
-			"type": "live",
-			"title": "Welcome To Twitch!",
-			"viewer_count": 111111,
-			"started_at": "2022-06-12T03:55:05Z",
-			"language": "en",
-			"thumbnail_url": "https://localhost/preview.jpg"
-		}, {
-			"id": "141981765",
-			"user_id": "141981765",
-			"user_login": "twitchdev2",
-			"user_name": "TwitchDev2",
-			"game_id": "509658",
-			"game_name": "Just Chatting",
-			"type": "live",
-			"title": "Welcome To Twitch!",
-			"viewer_count": 111111,
-			"started_at": "2022-06-11T18:58:01Z",
-			"language": "en",
-			"thumbnail_url": "https://localhost/preview.jpg"
-		}],
-		"pagination": {}
-	}`
-
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, restData)
+			fmt.Fprint(w, testStreamsList)
 		}))
 	defer svr.Close()
 
 	// Make the request with a mock config
-	configJSON := "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
-	testCreatedAtTime, _ := time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
-	loggedInUser := User{
-		"141981764",
-		"twitchdev",
-		"TwitchDev",
-		"partner",
-		"Supporting third-party developers building Twitch integrations from chatbots to game integrations.",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
-		"https://static-cdn.jtvnw.net/jtv_user_pictures/3f13ab61-ec78-4fe6-8481-8682cb3b0ac2-channel_offline_image-1920x1080.png",
-		5980557,
-		testCreatedAtTime,
-	}
-	c, _ := ParseConfig(configJSON)
+
+	c, _ := ParseConfig(testConfigJSON)
 	twitchConn := NewTwitch(c)
-	twitchConn.user = loggedInUser
+	twitchConn.user = testUser
 	twitchConn.BaseApiUrl = svr.URL
 	streams := twitchConn.GetFollowedStreams()
 
