@@ -144,7 +144,6 @@ func TestGetFollowedStreams(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-
 	c, _ := ParseConfig(testConfigJSON)
 	twitchConn := NewTwitch(c)
 	twitchConn.user = testUser
