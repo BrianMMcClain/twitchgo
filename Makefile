@@ -12,7 +12,7 @@ build:
 
 #test: @ Run all tests
 test:
-	go test ./twitch
+	go test ./twitch -race -covermode=atomic
 
 #clean: @ Remove build artifacts
 clean:
