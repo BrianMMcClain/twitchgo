@@ -71,3 +71,11 @@ func (t *Twitch) GetFollowedStreams(u User) []Stream {
 	json.Unmarshal(respBody, &streams)
 	return streams.Data
 }
+
+func (t *Twitch) GetChannelEmotes(u User) ([]Emote, string) {
+	requestURL := fmt.Sprintf("%s/chat/emotes?broadcaster_id=%s", t.BaseApiUrl, u.ID)
+	respBody := sendRequest(requestURL, t)
+	emotes := new(EmotesResponse)
+	json.Unmarshal(respBody, &emotes)
+	return emotes.Data, emotes.Template
+}

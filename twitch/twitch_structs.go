@@ -34,3 +34,25 @@ type Stream struct {
 type StreamsResponse struct {
 	Data []Stream `json:"data"`
 }
+
+type EmotesResponse struct {
+	Data     []Emote `json:"data"`
+	Template string  `json:"template"`
+}
+type Emote struct {
+	ID        string      `json:"id"`
+	Name      string      `json:"name"`
+	Images    EmoteImages `json:"images"`
+	Tier      string      `json:"tier"`
+	Format    []string    `json:"format"`
+	Scale     []string    `json:"scale"`
+	ThemeMode []string    `json:"theme_mode"`
+	Type      string      `json:"emote_type"`
+	SetID     string      `json:"emote_set_id"`
+}
+
+type EmoteImages struct {
+	URL1x string `json:"url_1x"`
+	URL2x string `json:"url_2x"`
+	URL4x string `json:"url_4x"`
+}
