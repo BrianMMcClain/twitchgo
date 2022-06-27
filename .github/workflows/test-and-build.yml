@@ -21,6 +21,4 @@ jobs:
       
     - name: Run Tests
       run: make test
-
-    - name: Rub Build
-      run: make
+      
