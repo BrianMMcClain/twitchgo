@@ -24,4 +24,4 @@ __debug_bin
 twitchgo
 
 # VSCode
-.vscode/*.log
+.vscode
