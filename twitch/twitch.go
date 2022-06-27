@@ -64,14 +64,8 @@ func (t *Twitch) GetLoggedInUser() User {
 	}
 }
 
-func (t *Twitch) GetFollowedStreams() []Stream {
-
-	// Get the logged in user's ID if not already cached
-	if len(t.user.ID) == 0 {
-		t.GetLoggedInUser()
-	}
-
-	requestURL := fmt.Sprintf("%s/streams/followed?user_id=%s", t.BaseApiUrl, t.user.ID)
+func (t *Twitch) GetFollowedStreams(u User) []Stream {
+	requestURL := fmt.Sprintf("%s/streams/followed?user_id=%s", t.BaseApiUrl, u.ID)
 	respBody := sendRequest(requestURL, t)
 	streams := new(StreamsResponse)
 	json.Unmarshal(respBody, &streams)

@@ -17,7 +17,7 @@ func main() {
 	u := twitchConn.GetLoggedInUser()
 	fmt.Printf("Hello, %s!\n", u.DisplayName)
 
-	streams := twitchConn.GetFollowedStreams()
+	streams := twitchConn.GetFollowedStreams(u)
 	for i, s := range streams {
 		fmt.Printf("%d: %s (%d - %s): %s\n", i+1, s.UserName, s.ViewerCount, s.GameName, s.Title)
 	}

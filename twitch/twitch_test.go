@@ -148,7 +148,7 @@ func TestGetFollowedStreams(t *testing.T) {
 	twitchConn := NewTwitch(c)
 	twitchConn.user = testUser
 	twitchConn.BaseApiUrl = svr.URL
-	streams := twitchConn.GetFollowedStreams()
+	streams := twitchConn.GetFollowedStreams(testUser)
 
 	// Verify tests
 	wantStreamCount := 2
