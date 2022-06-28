@@ -1,4 +1,4 @@
-package twitch
+package twitch_test
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/brianmmcclain/twitchgo/twitch"
 )
 
 var testConfigJSON = "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
@@ -27,7 +29,7 @@ var testUserJSON = `{
 		]
 	}`
 var testCreatedAtTime, _ = time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
-var testUser = User{
+var testUser = twitch.User{
 	"141981764",
 	"twitchdev",
 	"TwitchDev",
@@ -69,6 +71,23 @@ var testStreamsList = `{
 	"pagination": {}
 }`
 
+var testChatSettingsJson = `{
+	"data": [
+	  {
+		"broadcaster_id": "713936733",
+		"slow_mode": false,
+		"slow_mode_wait_time": null,
+		"follower_mode": true,
+		"follower_mode_duration": 20,
+		"subscriber_mode": false,
+		"emote_mode": false,
+		"unique_chat_mode": false,
+		"non_moderator_chat_delay": true,
+		"non_moderator_chat_delay_duration": 4
+	  }
+	]
+  }`
+
 func TestGetUserByLogin(t *testing.T) {
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
@@ -78,8 +97,8 @@ func TestGetUserByLogin(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := ParseConfig(testConfigJSON)
-	twitchConn := NewTwitch(c)
+	c, _ := twitch.ParseConfig(testConfigJSON)
+	twitchConn := twitch.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetUserByLogin("testUser")
 
@@ -104,18 +123,7 @@ func TestGetUserByLogin(t *testing.T) {
 
 }
 
-func TestGetLoggedInUserCached(t *testing.T) {
-	c, _ := ParseConfig(testConfigJSON)
-	twitchConn := NewTwitch(c)
-	twitchConn.user = testUser
-	u2 := twitchConn.GetLoggedInUser()
-
-	if testUser != u2 {
-		t.Fatalf(`GetLoggedInUser() = got %v, want cached %v`, u2, testUser)
-	}
-}
-
-func TestGetLoggedInUserNotCached(t *testing.T) {
+func TestGetLoggedInUser(t *testing.T) {
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
@@ -124,8 +132,8 @@ func TestGetLoggedInUserNotCached(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := ParseConfig(testConfigJSON)
-	twitchConn := NewTwitch(c)
+	c, _ := twitch.ParseConfig(testConfigJSON)
+	twitchConn := twitch.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetLoggedInUser()
 
@@ -144,9 +152,8 @@ func TestGetFollowedStreams(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := ParseConfig(testConfigJSON)
-	twitchConn := NewTwitch(c)
-	twitchConn.user = testUser
+	c, _ := twitch.ParseConfig(testConfigJSON)
+	twitchConn := twitch.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	streams := twitchConn.GetFollowedStreams(testUser)
 
@@ -191,5 +198,44 @@ func TestGetFollowedStreams(t *testing.T) {
 		t.Fatalf(`GetFollowedStreams() = got %s, want %s`, streams[0].StartedAt, wantStartedAt)
 	} else if streams[0].ThumbnailURL != wantThumbnailURL {
 		t.Fatalf(`GetFollowedStreams() = got %s, want %s`, streams[0].ThumbnailURL, wantThumbnailURL)
+	}
+}
+
+func TestGetChatSettings(t *testing.T) {
+	const TEST_NAME = "GetChatSettings"
+
+	// Set up the test server
+	svr := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, testChatSettingsJson)
+		}))
+	defer svr.Close()
+
+	// Make the request with a mock config
+	c, _ := twitch.ParseConfig(testConfigJSON)
+	twitchConn := twitch.NewTwitch(c)
+	twitchConn.BaseApiUrl = svr.URL
+	settings, err := twitchConn.GetChatSettings(testUser)
+
+	// Ensure we didn't get an error parsing the response
+	verify(err, nil, TEST_NAME, "ParseSettings", t)
+
+	// Verify tests
+	wantBroadcasterID := "713936733"
+	wantSlowMode := false
+	wantSlowModeWaitTime := 0
+	wantFollowerMode := true
+	wantFollowerModeDuration := 20
+
+	verify(wantBroadcasterID, settings.BroadcasterID, TEST_NAME, "BroadcasterID", t)
+	verify(wantSlowMode, settings.SlowMode, TEST_NAME, "SlowMode", t)
+	verify(wantSlowModeWaitTime, settings.SlowModeWaitTime, TEST_NAME, "SlowModeDuration", t)
+	verify(wantFollowerMode, settings.FollowerMode, TEST_NAME, "FollowerMode", t)
+	verify(wantFollowerModeDuration, settings.FollowerModeDuration, TEST_NAME, "FollowerModeDuration", t)
+}
+
+func verify(want, got interface{}, testName string, caseName string, t *testing.T) {
+	if want != got {
+		t.Fatalf(`%s() %s = got %s, want %s`, testName, caseName, want, got)
 	}
 }

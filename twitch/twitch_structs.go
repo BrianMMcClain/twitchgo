@@ -56,3 +56,18 @@ type EmoteImages struct {
 	URL2x string `json:"url_2x"`
 	URL4x string `json:"url_4x"`
 }
+
+type ChatSettings struct {
+	BroadcasterID        string `json:"broadcaster_id"`
+	SlowMode             bool   `json:"slow_mode"`
+	SlowModeWaitTime     int    `json:"slow_mode_wait_time"`
+	FollowerMode         bool   `json:"follower_mode"`
+	FollowerModeDuration int    `json:"follower_mode_duration"`
+	SubscriberMode       bool   `json:"subscriber_mode"`
+	EmoteMode            bool   `json:"emote_mode"`
+	UniqueChatMode       bool   `json:"unique_chat_mode"`
+}
+
+type ChatSettingsResponse struct {
+	Data []ChatSettings `json:"data"`
+}

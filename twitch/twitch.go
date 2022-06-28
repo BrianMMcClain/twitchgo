@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -78,4 +79,17 @@ func (t *Twitch) GetChannelEmotes(u User) ([]Emote, string) {
 	emotes := new(EmotesResponse)
 	json.Unmarshal(respBody, &emotes)
 	return emotes.Data, emotes.Template
+}
+
+func (t *Twitch) GetChatSettings(u User) (*ChatSettings, error) {
+	requestURL := fmt.Sprintf("%s/chat/settings?broadcaster_id=%s", t.BaseApiUrl, u.ID)
+	respBody := sendRequest(requestURL, t)
+	settings := new(ChatSettingsResponse)
+	json.Unmarshal(respBody, &settings)
+
+	if len(settings.Data) > 0 {
+		return &settings.Data[0], nil
+	} else {
+		return nil, errors.New("no chat settings could be retrieved")
+	}
 }
