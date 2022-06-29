@@ -14,6 +14,9 @@ func main() {
 	config := twitch.LoadConfig("config/config.json")
 	twitchConn := twitch.NewTwitch(config)
 	twitchConn.Auth()
+
+	twitchConn.AddChatHandler(chatHandler)
+
 	u := twitchConn.GetLoggedInUser()
 	fmt.Printf("Hello, %s!\n", u.DisplayName)
 
@@ -37,10 +40,12 @@ func main() {
 	}
 
 	fmt.Printf("Connecting to %s . . .\n", streams[in-1].UserName)
-	msgChannel := make(chan twitch.Message)
-	twitchConn.ChatConnect(streams[in-1].UserLogin, msgChannel)
-	for {
-		msg := <-msgChannel
-		fmt.Printf("%s: %s\n", msg.Sender, msg.Text)
-	}
+
+	twitchConn.ChatConnect(streams[in-1].UserLogin)
+
+	fmt.Scanln()
+}
+
+func chatHandler(m *twitch.Message) {
+	fmt.Printf("%s: %s\n", m.Sender, m.Text)
 }

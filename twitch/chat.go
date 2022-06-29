@@ -25,7 +25,9 @@ type Message struct {
 	UserID     string
 }
 
-func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
+var chatHandlers []func(*Message)
+
+func (t *Twitch) ChatConnect(channel string) {
 	CHAT_HOST := "irc.chat.twitch.tv:6667"
 
 	// Build the chat struct
@@ -45,7 +47,11 @@ func (t *Twitch) ChatConnect(channel string, msgChannel chan Message) {
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
 	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
 
-	go chat.readThread(conn, msgChannel)
+	go chat.readThread(conn)
+}
+
+func (t *Twitch) AddChatHandler(h func(m *Message)) {
+	chatHandlers = append(chatHandlers, h)
 }
 
 func (c *Chat) sendMsg(message string) {
@@ -55,7 +61,7 @@ func (c *Chat) sendMsg(message string) {
 	}
 }
 
-func (c *Chat) readThread(conn net.Conn, msgChannel chan Message) {
+func (c *Chat) readThread(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 	for {
 		lineB, _, err := reader.ReadLine()
@@ -79,7 +85,9 @@ func (c *Chat) readThread(conn net.Conn, msgChannel chan Message) {
 		} else if strings.Contains(line, ".tmi.twitch.tv PRIVMSG #"+strings.ToLower(c.Channel)+" :") {
 			// Read a message in the streams chat
 			m := c.parseMessage(line)
-			msgChannel <- *m
+			for _, h := range chatHandlers {
+				h(m)
+			}
 		}
 	}
 }
