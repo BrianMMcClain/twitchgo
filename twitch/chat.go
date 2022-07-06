@@ -23,6 +23,7 @@ type Message struct {
 	SubLength  int
 	Mod        bool
 	UserID     string
+	Channel    string
 }
 
 var chatHandlers []func(*Message)
@@ -101,6 +102,7 @@ func (c *Chat) sendPong(line string) {
 
 func (c *Chat) parseMessage(line string) *Message {
 	m := new(Message)
+	m.Channel = c.Channel
 
 	// Parse the advanced tags to pull the user, sub, and mod info
 	tags := strings.Split(strings.Split(line, "!")[0][1:], ";")
