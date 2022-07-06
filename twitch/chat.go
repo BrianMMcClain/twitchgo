@@ -72,12 +72,10 @@ func (c *Chat) readThread(conn net.Conn) {
 
 		if strings.Contains(line, ":tmi.twitch.tv 001 "+strings.ToLower(c.Twitch.GetLoggedInUser().Login)+" :Welcome, GLHF!") {
 			// We've authenticated to the server
-			log.Println("Connected!")
 			c.Connected = true
 			c.joinChannel()
 		} else if strings.Contains(line, " 366 "+strings.ToLower(c.Twitch.GetLoggedInUser().Login)+" #"+strings.ToLower(c.Channel)) {
 			// We've joined the desired channel
-			log.Printf("Joined %s", c.Channel)
 			c.Joined = true
 		} else if strings.Contains(line, "PING") {
 			// Respond to Keepalive message

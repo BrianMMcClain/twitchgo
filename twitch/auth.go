@@ -14,9 +14,9 @@ import (
 
 func (t *Twitch) Auth() {
 	if len(t.config.Token.RefreshToken) > 0 && !t.config.Token.Expires.Before(time.Now()) {
-		log.Println("Token still valid, reusing")
+		// Token is still valid
 	} else {
-		log.Println("Token expired, refreshing")
+		// Token expired
 		t.fetchAuthCode()
 		token := t.fetchToken()
 		t.config.Token = *token
@@ -34,7 +34,6 @@ func (t *Twitch) fetchAuthCode() {
 	http.HandleFunc("/", t.authCallback)
 	go func() {
 		err := t.server.ListenAndServe()
-		log.Println("Server listening on port 8080")
 		if err != http.ErrServerClosed {
 			log.Fatalf("Error starting local HTTP server: %v", err)
 		}
