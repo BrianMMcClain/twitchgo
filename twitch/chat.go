@@ -26,9 +26,9 @@ type Message struct {
 	Channel    string
 }
 
-var chatHandlers []func(*Message)
+var chatCallback func(*Message)
 
-func (t *Twitch) ChatConnect(channel string) {
+func (t *Twitch) ChatConnect(channel string, handler func(*Message)) {
 	CHAT_HOST := "irc.chat.twitch.tv:6667"
 
 	// Build the chat struct
@@ -48,11 +48,9 @@ func (t *Twitch) ChatConnect(channel string) {
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
 	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
 
-	go chat.readThread(conn)
-}
+	chatCallback = handler
 
-func (t *Twitch) AddChatHandler(h func(m *Message)) {
-	chatHandlers = append(chatHandlers, h)
+	go chat.readThread(conn)
 }
 
 func (c *Chat) sendMsg(message string) {
@@ -84,9 +82,7 @@ func (c *Chat) readThread(conn net.Conn) {
 		} else if strings.Contains(line, ".tmi.twitch.tv PRIVMSG #"+strings.ToLower(c.Channel)+" :") {
 			// Read a message in the streams chat
 			m := c.parseMessage(line)
-			for _, h := range chatHandlers {
-				h(m)
-			}
+			chatCallback(m)
 		}
 	}
 }
