@@ -7,12 +7,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/brianmmcclain/twitchgo/twitch"
+	"github.com/brianmmcclain/twitchgo"
 )
 
 func main() {
-	config := twitch.LoadConfig("config/config.json")
-	twitchConn := twitch.NewTwitch(config)
+	config := twitchgo.LoadConfig("config/config.json")
+	twitchConn := twitchgo.NewTwitch(config)
 	twitchConn.Auth()
 
 	u := twitchConn.GetLoggedInUser()
@@ -44,6 +44,6 @@ func main() {
 	fmt.Scanln()
 }
 
-func chatHandler(m *twitch.Message) {
+func chatHandler(m *twitchgo.Message) {
 	fmt.Printf("%s: %s\n", m.Sender, m.Text)
 }

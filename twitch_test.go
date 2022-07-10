@@ -1,4 +1,4 @@
-package twitch_test
+package twitchgo_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianmmcclain/twitchgo/twitch"
+	"github.com/brianmmcclain/twitchgo"
 )
 
 var testConfigJSON = "{\"client_id\": \"MyID\", \"client_secret\": \"MySecret\"}"
@@ -29,7 +29,7 @@ var testUserJSON = `{
 		]
 	}`
 var testCreatedAtTime, _ = time.Parse("2006-01-02T15:04:05Z", "2016-12-14T20:32:28Z")
-var testUser = twitch.User{
+var testUser = twitchgo.User{
 	"141981764",
 	"twitchdev",
 	"TwitchDev",
@@ -97,8 +97,8 @@ func TestGetUserByLogin(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := twitch.ParseConfig(testConfigJSON)
-	twitchConn := twitch.NewTwitch(c)
+	c, _ := twitchgo.ParseConfig(testConfigJSON)
+	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetUserByLogin("testUser")
 
@@ -132,8 +132,8 @@ func TestGetLoggedInUser(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := twitch.ParseConfig(testConfigJSON)
-	twitchConn := twitch.NewTwitch(c)
+	c, _ := twitchgo.ParseConfig(testConfigJSON)
+	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	u := twitchConn.GetLoggedInUser()
 
@@ -152,8 +152,8 @@ func TestGetFollowedStreams(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := twitch.ParseConfig(testConfigJSON)
-	twitchConn := twitch.NewTwitch(c)
+	c, _ := twitchgo.ParseConfig(testConfigJSON)
+	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	streams := twitchConn.GetFollowedStreams(testUser)
 
@@ -212,8 +212,8 @@ func TestGetChatSettings(t *testing.T) {
 	defer svr.Close()
 
 	// Make the request with a mock config
-	c, _ := twitch.ParseConfig(testConfigJSON)
-	twitchConn := twitch.NewTwitch(c)
+	c, _ := twitchgo.ParseConfig(testConfigJSON)
+	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
 	settings, err := twitchConn.GetChatSettings(testUser)
 
