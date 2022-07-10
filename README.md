@@ -13,9 +13,9 @@ Example client in the `cmd` directory. Copy the `cmd/config/config.json.ph` file
 package main
 
 import (
-	"fmt"
+    "fmt"
 
-	"github.com/brianmmcclain/twitchgo"
+    "github.com/brianmmcclain/twitchgo"
 )
 
 func main() {
