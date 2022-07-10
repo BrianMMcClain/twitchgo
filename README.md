@@ -20,8 +20,8 @@ import (
 
 func main() {
     // Read the config and create a new client with it
-	twitchConfig := twitchgo.LoadConfig("/path/to/config.json")
-	twitchClient := twitchgo.NewTwitch(twitchConfig)
+    twitchConfig := twitchgo.LoadConfig("/path/to/config.json")
+    twitchClient := twitchgo.NewTwitch(twitchConfig)
 	
     // Authenticate to the Twitch API. Twitch uses your long-living
     // client ID and secret to generate short-lived tokens used to
@@ -32,15 +32,15 @@ func main() {
     // Connect a channels chat
     // This method takes a function as an argument which gets invoked
     // with each message received
-	twitchClient.ChatConnect("CHANNEL_NAME", chatCallback)
+    twitchClient.ChatConnect("CHANNEL_NAME", chatCallback)
 
     // Only for the sake of the demo so the application
     // doesn't exit immediately
-	fmt.Scanln()
+    fmt.Scanln()
 }
 
 // The callback that gets called with each message received
 func chatCallback(m *twitchgo.Message) {
-	fmt.Printf("%s: %s\n", m.Sender, m.Text)
+    fmt.Printf("%s: %s\n", m.Sender, m.Text)
 }
 ```
