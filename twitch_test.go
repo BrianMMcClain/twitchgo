@@ -88,6 +88,39 @@ var testChatSettingsJson = `{
 	]
   }`
 
+var testChannelEmotesJson = `{
+	"data": [{
+		"id": "000001",
+		"name": "emote1",
+		"images": {
+			"url_1x": "https://static-cdn.jtvnw.net/emoticons/v2/000001/static/light/1.0",
+			"url_2x": "https://static-cdn.jtvnw.net/emoticons/v2/000001/static/light/2.0",
+			"url_4x": "https://static-cdn.jtvnw.net/emoticons/v2/000001/static/light/3.0"
+		},
+		"tier": "2000",
+		"emote_type": "subscriptions",
+		"emote_set_id": "000001",
+		"format": ["static"],
+		"scale": ["1.0", "2.0", "3.0"],
+		"theme_mode": ["light", "dark"]
+	}, {
+		"id": "000002",
+		"name": "emote2",
+		"images": {
+			"url_1x": "https://static-cdn.jtvnw.net/emoticons/v2/000002/static/light/1.0",
+			"url_2x": "https://static-cdn.jtvnw.net/emoticons/v2/000002/static/light/2.0",
+			"url_4x": "https://static-cdn.jtvnw.net/emoticons/v2/000002/static/light/3.0"
+		},
+		"tier": "1000",
+		"emote_type": "subscriptions",
+		"emote_set_id": "000001",
+		"format": ["static"],
+		"scale": ["1.0", "2.0", "3.0"],
+		"theme_mode": ["light", "dark"]
+	}],
+	"template": "https://static-cdn.jtvnw.net/emoticons/v2/{{id}}/{{format}}/{{theme_mode}}/{{scale}}"
+}`
+
 func TestGetUserByLogin(t *testing.T) {
 	// Set up the test server
 	svr := httptest.NewServer(http.HandlerFunc(
@@ -232,6 +265,39 @@ func TestGetChatSettings(t *testing.T) {
 	verify(wantSlowModeWaitTime, settings.SlowModeWaitTime, TEST_NAME, "SlowModeDuration", t)
 	verify(wantFollowerMode, settings.FollowerMode, TEST_NAME, "FollowerMode", t)
 	verify(wantFollowerModeDuration, settings.FollowerModeDuration, TEST_NAME, "FollowerModeDuration", t)
+}
+
+func TestGetChannelEmotes(t *testing.T) {
+	const TEST_NAME = "GetChannelEmotes"
+
+	// Set up the test server
+	svr := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, testChannelEmotesJson)
+		}))
+	defer svr.Close()
+
+	// Make the request with a mock config
+	c, _ := twitchgo.ParseConfig(testConfigJSON)
+	twitchConn := twitchgo.NewTwitch(c)
+	twitchConn.BaseApiUrl = svr.URL
+	emotes, err := twitchConn.GetChannelEmotes(testUser)
+
+	// Verify that we didn't get an error
+	verify(err, nil, TEST_NAME, "ParseEmotes", t)
+
+	// Verify tests
+	wantEmoteCount := 2
+	wantEmote1Name := "emote1"
+	wantEmote2Name := "emote2"
+	wantEmote1Tier := "2000"
+	wantEmote2Tier := "1000"
+
+	verify(len(emotes), wantEmoteCount, TEST_NAME, "EmoteCount", t)
+	verify(emotes[0].Name, wantEmote1Name, TEST_NAME, "Emote1Name", t)
+	verify(emotes[1].Name, wantEmote2Name, TEST_NAME, "Emote2Name", t)
+	verify(emotes[0].Tier, wantEmote1Tier, TEST_NAME, "Emote1Tier", t)
+	verify(emotes[1].Tier, wantEmote2Tier, TEST_NAME, "Emote2Tier", t)
 }
 
 func verify(want, got interface{}, testName string, caseName string, t *testing.T) {
