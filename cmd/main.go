@@ -15,10 +15,16 @@ func main() {
 	twitchConn := twitchgo.NewTwitch(config)
 	twitchConn.Auth()
 
-	u := twitchConn.GetLoggedInUser()
+	u, err := twitchConn.GetLoggedInUser()
+	if err != nil {
+		log.Fatal("Could not get logged in user: ", err)
+	}
 	fmt.Printf("Hello, %s!\n", u.DisplayName)
 
-	streams := twitchConn.GetFollowedStreams(u)
+	streams, err := twitchConn.GetFollowedStreams(u)
+	if err != nil {
+		log.Fatal("Could not get followed streams: ", err)
+	}
 	for i, s := range streams {
 		fmt.Printf("%d: %s (%d - %s): %s\n", i+1, s.UserName, s.ViewerCount, s.GameName, s.Title)
 	}

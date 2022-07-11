@@ -2,6 +2,8 @@ package twitchgo
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -28,7 +30,7 @@ type Message struct {
 
 var chatCallback func(*Message)
 
-func (t *Twitch) ChatConnect(channel string, handler func(*Message)) {
+func (t *Twitch) ChatConnect(channel string, handler func(*Message)) error {
 	CHAT_HOST := "irc.chat.twitch.tv:6667"
 
 	// Build the chat struct
@@ -44,13 +46,19 @@ func (t *Twitch) ChatConnect(channel string, handler func(*Message)) {
 	chat.Conn = conn
 
 	// Authenticate
+	user, err := t.GetLoggedInUser()
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error connecting to chat: %v", err))
+	}
 	chat.sendMsg("CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands")
 	chat.sendMsg("PASS oauth:" + t.config.Token.AccessToken)
-	chat.sendMsg("NICK " + t.GetLoggedInUser().Login)
+	chat.sendMsg("NICK " + user.Login)
 
 	chatCallback = handler
 
 	go chat.readThread(conn)
+
+	return nil
 }
 
 func (c *Chat) sendMsg(message string) {
@@ -61,6 +69,7 @@ func (c *Chat) sendMsg(message string) {
 }
 
 func (c *Chat) readThread(conn net.Conn) {
+	user, _ := c.Twitch.GetLoggedInUser()
 	reader := bufio.NewReader(conn)
 	for {
 		lineB, _, err := reader.ReadLine()
@@ -69,11 +78,11 @@ func (c *Chat) readThread(conn net.Conn) {
 		}
 		line := string(lineB)
 
-		if strings.Contains(line, ":tmi.twitch.tv 001 "+strings.ToLower(c.Twitch.GetLoggedInUser().Login)+" :Welcome, GLHF!") {
+		if strings.Contains(line, ":tmi.twitch.tv 001 "+strings.ToLower(user.Login)+" :Welcome, GLHF!") {
 			// We've authenticated to the server
 			c.Connected = true
 			c.joinChannel()
-		} else if strings.Contains(line, " 366 "+strings.ToLower(c.Twitch.GetLoggedInUser().Login)+" #"+strings.ToLower(c.Channel)) {
+		} else if strings.Contains(line, " 366 "+strings.ToLower(user.Login)+" #"+strings.ToLower(c.Channel)) {
 			// We've joined the desired channel
 			c.Joined = true
 		} else if strings.Contains(line, "PING") {

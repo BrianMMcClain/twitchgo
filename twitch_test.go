@@ -100,7 +100,7 @@ func TestGetUserByLogin(t *testing.T) {
 	c, _ := twitchgo.ParseConfig(testConfigJSON)
 	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
-	u := twitchConn.GetUserByLogin("testUser")
+	u, _ := twitchConn.GetUserByLogin("testUser")
 
 	// Verify test
 	wantID := "141981764"
@@ -135,7 +135,7 @@ func TestGetLoggedInUser(t *testing.T) {
 	c, _ := twitchgo.ParseConfig(testConfigJSON)
 	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
-	u := twitchConn.GetLoggedInUser()
+	u, _ := twitchConn.GetLoggedInUser()
 
 	// Verify tests
 	if testUser != u {
@@ -155,7 +155,7 @@ func TestGetFollowedStreams(t *testing.T) {
 	c, _ := twitchgo.ParseConfig(testConfigJSON)
 	twitchConn := twitchgo.NewTwitch(c)
 	twitchConn.BaseApiUrl = svr.URL
-	streams := twitchConn.GetFollowedStreams(testUser)
+	streams, _ := twitchConn.GetFollowedStreams(testUser)
 
 	// Verify tests
 	wantStreamCount := 2
