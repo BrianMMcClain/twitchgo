@@ -8,7 +8,7 @@ help:
 
 #build: @ Build the twitchgo client binary
 build:
-	go build
+	go build -o twitchgo-client cmd/main.go
 
 #test: @ Run all tests
 test:
@@ -16,4 +16,4 @@ test:
 
 #clean: @ Remove build artifacts
 clean:
-	rm twitchgo
+	rm twitchgo-client

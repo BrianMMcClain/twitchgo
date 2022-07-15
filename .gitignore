@@ -21,7 +21,7 @@ cmd/config/config.json
 __debug_bin
 
 # build
-twitchgo
+twitchgo-client
 
 # VSCode
 .vscode

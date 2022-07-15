@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +12,13 @@ import (
 )
 
 func main() {
-	config := twitchgo.LoadConfig("config/config.json")
+
+	// Parse the optional command line flag
+	configPath := flag.String("config", "config/config.json", "Path to the config JSON file")
+	flag.Parse()
+
+	// Parse the config and authenticate
+	config := twitchgo.LoadConfig(*configPath)
 	twitchConn := twitchgo.NewTwitch(config)
 	twitchConn.Auth()
 
